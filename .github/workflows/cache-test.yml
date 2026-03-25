@@ -1,0 +1,33 @@
+name: Cache Test
+on: push
+jobs:
+  test-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create test file
+        run: |
+          mkdir -p /tmp/test-cache-dir
+          echo "hello cache" > /tmp/test-cache-dir/test.txt
+          cat /tmp/test-cache-dir/test.txt
+
+      - name: Save cache
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/test-cache-dir
+          key: test-cache-key-${{ github.sha }}
+
+      - name: Remove cached dir
+        run: rm -rf /tmp/test-cache-dir
+
+      - name: Restore cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/test-cache-dir
+          key: test-cache-key-${{ github.sha }}
+
+      - name: Verify cache restored
+        run: |
+          cat /tmp/test-cache-dir/test.txt
+          test -f /tmp/test-cache-dir/test.txt && echo "Cache restored successfully!" || exit 1
