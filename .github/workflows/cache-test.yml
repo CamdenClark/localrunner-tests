@@ -6,6 +6,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug env
+        run: |
+          echo "ACTIONS_CACHE_URL=$ACTIONS_CACHE_URL"
+          echo "ACTIONS_RUNTIME_TOKEN=${ACTIONS_RUNTIME_TOKEN:+SET}"
+          echo "ACTIONS_RUNTIME_URL=$ACTIONS_RUNTIME_URL"
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL=$ACTIONS_ID_TOKEN_REQUEST_URL"
+          env | grep -i cache || true
+          env | grep -i actions || true
+
       - name: Create test file
         run: |
           mkdir -p /tmp/test-cache-dir
@@ -29,5 +38,6 @@ jobs:
 
       - name: Verify cache restored
         run: |
-          cat /tmp/test-cache-dir/test.txt
+          ls -la /tmp/test-cache-dir/ || echo "Directory not found"
+          cat /tmp/test-cache-dir/test.txt || echo "File not found"
           test -f /tmp/test-cache-dir/test.txt && echo "Cache restored successfully!" || exit 1
