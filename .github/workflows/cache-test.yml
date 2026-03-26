@@ -10,22 +10,19 @@ jobs:
         run: |
           echo "ACTIONS_CACHE_URL=$ACTIONS_CACHE_URL"
           echo "ACTIONS_RUNTIME_TOKEN=${ACTIONS_RUNTIME_TOKEN:+SET}"
-          echo "ACTIONS_RUNTIME_URL=$ACTIONS_RUNTIME_URL"
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL=$ACTIONS_ID_TOKEN_REQUEST_URL"
-          env | grep -i cache || true
-          env | grep -i actions || true
+          env | sort > /tmp/debug-env.txt
+          cat /tmp/debug-env.txt
 
       - name: Create test file
         run: |
           mkdir -p /tmp/test-cache-dir
           echo "hello cache" > /tmp/test-cache-dir/test.txt
-          cat /tmp/test-cache-dir/test.txt
 
       - name: Save cache
         uses: actions/cache/save@v4
         with:
           path: /tmp/test-cache-dir
-          key: test-cache-key-${{ github.sha }}
+          key: test-cache-key-v1
 
       - name: Remove cached dir
         run: rm -rf /tmp/test-cache-dir
@@ -34,10 +31,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: /tmp/test-cache-dir
-          key: test-cache-key-${{ github.sha }}
+          key: test-cache-key-v1
 
       - name: Verify cache restored
         run: |
-          ls -la /tmp/test-cache-dir/ || echo "Directory not found"
-          cat /tmp/test-cache-dir/test.txt || echo "File not found"
-          test -f /tmp/test-cache-dir/test.txt && echo "Cache restored successfully!" || exit 1
+          cat /tmp/test-cache-dir/test.txt 2>&1 || echo "File not found"
+          test -f /tmp/test-cache-dir/test.txt && echo "SUCCESS" || exit 1
